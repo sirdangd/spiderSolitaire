@@ -85,7 +85,11 @@ class CardClass extends SuitClass
 
     public void setFlipped (boolean newFlipped)
     {
-	isFaceUp = newFlipped;
+		if (isFaceUp == newFlipped) {
+			return;
+		} else {
+			isFaceUp = newFlipped;
+		}
     }
 
 
@@ -346,6 +350,17 @@ class CardClass extends SuitClass
 	}
     }
 
+    public boolean isPointInside (int x, int y)
+    {
+	if (x >= super.getCenterX() && x <= super.getCenterX() + super.getWidth() && y >= super.getCenterY() && y<= super.getCenterY() + super.getHeight())
+	{
+	    return true;
+	} 
+	else
+	{
+	    return false;
+	}
+    }
 
     public CardClass ()
     {

@@ -100,16 +100,21 @@ public class DeckClass extends ShapeClass
 
     public void draw (Graphics g, int i, int newX, int newY, boolean flipped)
     {
+	super.setCenter (newX, newY);
 	standardize ();
-	/*if (isEmpty ())
+
+	if (isEmpty ())
 	{
+	    Color oldColour = super.getColour ();
+	    super.setColour (Color.black);
 	    g.setColor (super.getColour ());
 	    g.drawRect (super.getCenterX () - super.getWidth () / 2, super.getCenterY () - super.getHeight () / 2,
 		    super.getWidth (), super.getHeight ());
-	}*/
+	    super.setColour(oldColour);
+	}
 	if (!isEmpty ())
 	{
-	    super.setCenter (newX, newY);
+
 	    getCard (i).setFlipped (flipped);
 	    getCard (i).draw (g);
 	}
@@ -224,7 +229,14 @@ public class DeckClass extends ShapeClass
     {
 	super (300, 300, 100, 70, Color.green);
 	deck = new Vector (104);
-	//initDeck (1);
+    }
+
+
+    public DeckClass (int numOfDecks)
+    {
+	super (50, 20, 100, 70, Color.green);
+	deck = new Vector (104);
+	initDeck (numOfDecks);
     }
 
 

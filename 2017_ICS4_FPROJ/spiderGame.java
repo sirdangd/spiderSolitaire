@@ -15,7 +15,12 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     int cardCtr = 0;
 
+    int tabIndex;
+    int tabCard;
+
     boolean drawBoard = false;
+
+    boolean OKtoMove = false;
 
     public void init ()
     {
@@ -53,26 +58,39 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     {
 	if (drawBoard)
 	{
+	    //System.out.println ("frist line");
 	    initStack ();
 	    initFondation ();
 	    initTableau ();
 	    drawDeck ();
+	    drawBoard = false;
+	    /*for (int n = 0 ; n < 10 ; n++)
+	    {
+		System.out.println (tabDeck [n].getCardCount ());
+	    }
+	    for (int i = 0 ; i < 8 ; i++)
+	    {
+		System.out.println(fondDeck [i].getCardCount());
+	    }
+	    System.out.println(stack.getCardCount());*/
 	}
     }
 
 
     public void initStack ()
     {
-	stack = new DeckClass (2, Color.green, 50, 800, 500);
+	stack = new DeckClass (2);
 	stack.shuffle ();
-	//System.out.println (stack.getCardCount ());
 
     }
 
 
     public void drawDeck ()
     {
-	stack.draw (g, cardCtr, 800, 500, false);
+	for (int i = stack.getCardCount () - 1 ; i >= 0 ; i--)
+	{
+	    stack.draw (g, i, 800, 500, false);
+	}
     }
 
 
@@ -81,61 +99,56 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	for (int i = 0 ; i < 8 ; i++)
 	{
 	    fondDeck [i] = new DeckClass ();
-	    //g.setColor (Color.black);
-	    //g.drawRect ((int) (100 + i * 75), 550, (int) (80 * 0.25), (int) (80 * 0.25) * (4 / 5));
+	    fondDeck [i].draw (g, i, 50 + i * 75, 600, false);
 	}
     }
 
 
     public void initTableau ()
     {
-	for (int n = 0 ; n < 10 ; n++)
+	int n, i;
+	for (n = 0 ; n < 10 ; n++)
 	{
 	    tabDeck [n] = new DeckClass ();
-	    for (int i = 0 ; i < 6 ; i++)
+	}
+	for (n = 0 ; n < 4 ; n++)
+	{
+	    for (i = 0 ; i < 6 ; i++)
 	    {
-		if (i == 5 && n < 4)
-		{
-		    tabDeck [n].addBot (stack.getTop ());
-		    //stack.removeAt(cardCtr);
-		    stack.removeTop();
-		    tabDeck [n].draw (g, i, 50 + n * 75, 100 + i * 50, false);
-		    cardCtr++;
-		}
-		if (i < 5)
-		{
-		    tabDeck [n].addBot (stack.getTop ());
-		    //stack.removeAt(cardCtr);
-		    stack.removeTop();
-		    tabDeck [n].draw (g, i, 50 + n * 75, 100 + i * 50, false);
-		    cardCtr++;
-		}
-
-		
+		initTabPile (n, i);
 	    }
 	}
-	for(int n = 0 ; n < 10 ; n++)
+	for (n = 4 ; n < 10 ; n++)
 	{
-	    System.out.println(tabDeck[n].getCardCount());
+	    for (i = 0 ; i < 5 ; i++)
+	    {
+		initTabPile (n, i);
+	    }
 	}
-	//flipLast();
+	flipLast ();
+    }
+
+
+    private void initTabPile (int n, int i)
+    {
+	tabDeck [n].addBot (stack.getTop ());
+	stack.removeTop ();
+	tabDeck [n].draw (g, i, 50 + n * 75, 100 + i * 25, false);
     }
 
 
     public void flipLast ()
     {
-	//boolean foundFlip;
-	//int tabCtr;
-	int numOfCards;
+	int cardIndexToFlip;
 	for (int x = 0 ; x < 10 ; x++)
 	{
-	    //foundFlip = false;
-	    //tabCtr = 0;
-	    numOfCards = tabDeck [x].getCardCount ();
-	    if ((tabDeck [x].getCard (numOfCards - 1)).getFlipped () == false)
+	    cardIndexToFlip = tabDeck [x].getCardCount () - 1;
+
+	    if (cardIndexToFlip > 0 && !(tabDeck [x].getCard (cardIndexToFlip)).getFlipped ())
 	    {
-		(tabDeck [x].getCard (numOfCards - 1)).setFlipped (true);
-		//foundFlip = true;
+		//(tabDeck [x].getCard (cardIndexToFlip)).setFlipped (true);
+		tabDeck [x].draw (g, cardIndexToFlip, (this.tabDeck [x]).getCenterX (), (this.tabDeck [x]).getCenterY (), true);
+		//draw()
 	    }
 	}
     }
@@ -163,15 +176,39 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     public void mousePressed (MouseEvent e)
     {
+	for (int n = 0 ; n < 10 ; n++)
+	{
+	    for (int i = 0 ; i < tabDeck [n].getCardCount () ; i++)
+	    {
+		if ((tabDeck [n].getCard (i)).isPointInside (e.getX (), e.getY ()))
+		{
+		    OKtoMove = true;
+		    //(tabDeck[n].getCard(i)).setCenter(e.getX(), e.getY());
+		    tabIndex = n;
+		    tabCard = i;
+		    tabDeck [n].draw (g, i, e.getX (), e.getY (), true);
+		    //repaint ();
+		}
+	    }
+	}
     }
 
 
     public void mouseReleased (MouseEvent e)
     {
+	OKtoMove = false;
+	//System.out.println ("released: " + e.getX () + ", " + e.getY ());
+	tabDeck [tabIndex].draw (g, tabCard, e.getX (), e.getY (), true);
+	//repaint ();
     }
 
 
     public void mouseDragged (MouseEvent e)
     {
+	if (OKtoMove == true)
+	{
+	    tabDeck [tabIndex].draw (g, tabCard, e.getX (), e.getY (), true);
+	    repaint ();
+	}
     }
 }
