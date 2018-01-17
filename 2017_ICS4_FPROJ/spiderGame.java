@@ -22,10 +22,17 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     boolean OKtoMove = false;
 
+
+
     public void init ()
     {
 	g = getGraphics ();
 	setSize (1000, 700);
+
+	/*initStack ();
+	initFondation ();
+	initTableau ();
+	drawDeck ();*/
 
 	add (newGame);
 	//add (gameInstruction);
@@ -43,6 +50,10 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
 	if (objSource == newGame)
 	{
+	    /*initStack ();
+	    initFondation ();
+	    initTableau ();
+	    drawDeck ();*/
 	    drawBoard = true;
 	}
 	/*if (objSource == gameInstruction)
@@ -63,7 +74,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	    initFondation ();
 	    initTableau ();
 	    drawDeck ();
-	    drawBoard = false;
+	    //drawBoard = false;
 	    /*for (int n = 0 ; n < 10 ; n++)
 	    {
 		System.out.println (tabDeck [n].getCardCount ());
@@ -129,6 +140,19 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     }
 
 
+    public void drawTableau ()
+    {
+	int n, i;
+	for (n = 0 ; n < 10 ; n++)
+	{
+	    for (i = 0 ; i < tabDeck [n].getCardCount () ; i++)
+	    {
+		tabDeck [n].draw (g, i, 50 + n * 75, 100 + i * 25, false);
+	    }
+	}
+    }
+
+
     private void initTabPile (int n, int i)
     {
 	tabDeck [n].addBot (stack.getTop ());
@@ -148,7 +172,23 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	    {
 		//(tabDeck [x].getCard (cardIndexToFlip)).setFlipped (true);
 		tabDeck [x].draw (g, cardIndexToFlip, (this.tabDeck [x]).getCenterX (), (this.tabDeck [x]).getCenterY (), true);
-		//draw()
+	    }
+	}
+    }
+
+
+    public void findMatchingCard (int tabIndex, int tabCard)
+    {
+	int cardIndexToCheck;
+	for (int n = 0 ; n < 10 ; n++)
+	{
+	    cardIndexToCheck = tabDeck [n].getCardCount () - 1;
+	    
+	    if (cardIndexToCheck > 0 && (tabDeck[tabIndex].getCard(tabCard)).getFaceValue() + 1 == (tabDeck[n].getCard(cardIndexToCheck)).getFaceValue())
+	    {
+		tabDeck[n].addTop(tabDeck[tabIndex].getCard(tabCard));
+		tabDeck[tabIndex].removeAt(tabCard);
+		return;
 	    }
 	}
     }
@@ -187,7 +227,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		    tabIndex = n;
 		    tabCard = i;
 		    tabDeck [n].draw (g, i, e.getX (), e.getY (), true);
-		    //repaint ();
+		    repaint ();
 		}
 	    }
 	}
@@ -199,7 +239,8 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	OKtoMove = false;
 	//System.out.println ("released: " + e.getX () + ", " + e.getY ());
 	tabDeck [tabIndex].draw (g, tabCard, e.getX (), e.getY (), true);
-	//repaint ();
+	findMatchingCard(tabIndex, tabCard);
+	repaint ();
     }
 
 
