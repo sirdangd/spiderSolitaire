@@ -180,11 +180,19 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		tempDeck.removeAt (0);
 		return;
 	    }
-	    else
+	    /*else
 	    {
 		tabDeck [tabIndex].addAt (tempDeck.getTop (), tabCard);
 		tempDeck.removeAt (0);
-	    }
+	    }*/
+	}
+    }
+    
+    public void checkIfGroup(int tab, int whichCard, int lastCard)
+    {
+	for(int i = whichCard ; i <= lastCard ; i++)
+	{
+	    
 	}
     }
 
@@ -211,36 +219,50 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     public void mousePressed (MouseEvent e)
     {
+	int lastCard;
 	for (int n = 0 ; n < 10 ; n++)
 	{
-	    for (int i = 0 ; i < tabDeck [n].getCardCount () ; i++)
+	    lastCard = tabDeck [n].getCardCount () - 1;
+	    for (int i = 0 ; i < lastCard ; i++)
 	    {
-		if ((tabDeck [n].getCard (i)).isPointInside (e.getX (), e.getY ()))
+		if((tabDeck[n].getCard(i)).isPointInside(e.getX(), e.getY()))
 		{
-		    OKtoMove = true;
-		    tabIndex = n;
-		    tabCard = i;
-		    tempDeck = new DeckClass ();
-		    tempDeck.addTop (tabDeck [n].getCard (i));
-		    tabDeck [n].removeAt (i);
-		    tempDeck.draw (g, 0, e.getX (), e.getY ());
-		    repaint ();
+		    checkIfGroup(n, i, lastCard);
 		}
 	    }
-	    /*if ((stack.getCard (0)).isPointInside (e.getX (), e.getY ()))
+	    if ((tabDeck [n].getCard (lastCard)).isPointInside (e.getX (), e.getY ()))
 	    {
-
-	    }*/
+		OKtoMove = true;
+		tabIndex = n;
+		tabCard = lastCard;
+		tempDeck = new DeckClass ();
+		tempDeck.addTop (tabDeck [n].getCard (lastCard));
+		tabDeck [n].removeAt (lastCard);
+		tempDeck.draw (g, 0, e.getX (), e.getY ());
+		repaint ();
+	    }
+	}
+	if ((stack.getCard (0)).isPointInside (e.getX (), e.getY ()))
+	{
+	    for (int n = 0 ; n < 10 ; n++)
+	    {
+		tabDeck [n].addBot (stack.getTop ());
+		stack.removeTop ();
+		repaint ();
+	    }
 	}
     }
 
 
     public void mouseReleased (MouseEvent e)
     {
-	OKtoMove = false;
-	tempDeck.draw (g, 0, e.getX (), e.getY ());
-	findMatchingCard (e.getX (), e.getY ());
-	repaint ();
+	if (OKtoMove)
+	{
+	    OKtoMove = false;
+	    tempDeck.draw (g, 0, e.getX (), e.getY ());
+	    findMatchingCard (e.getX (), e.getY ());
+	    repaint ();
+	}
     }
 
 
@@ -248,7 +270,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     {
 	if (OKtoMove == true)
 	{
-	    tabDeck [tabIndex].draw (g, tabCard, e.getX (), e.getY ());
+	    tempDeck.draw (g, 0, e.getX (), e.getY ());
 	    repaint ();
 	}
     }
