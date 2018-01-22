@@ -67,7 +67,8 @@ public class DeckClass extends ShapeClass
     public void draw (Graphics g, int i, int newX, int newY)
     {
 	super.setCenter (newX, newY);
-	standardize ();
+	//standardize ();
+	getCard (i).setCenter (newX, newY);
 
 	if (isEmpty ())
 	{
@@ -141,14 +142,16 @@ public class DeckClass extends ShapeClass
 
     public CardClass getCard (int num)
     {
-	if (!isEmpty () && num >= 0 && num < getCardCount ())
+	if (!deck.isEmpty () && num >= 0 && num <= getCardCount () - 1)
 	{
 	    return (CardClass) deck.elementAt (num);
 	}
 	else
 	{
-	    return (CardClass) getTop ();
+	    return null;
 	}
+
+
     }
 
 
@@ -173,7 +176,15 @@ public class DeckClass extends ShapeClass
 
     public CardClass getBot ()
     {
-	return getCard (getCardCount () - 1);
+	if (!isEmpty ())
+	{
+	    return getCard (getCardCount () - 1);
+	}
+	else
+	{
+
+	    return null;
+	}
     }
 
 

@@ -3,212 +3,394 @@ import java.util.*;
 import java.applet.*;
 import java.awt.event.*;
 
-public class spiderGame extends Applet implements ActionListener, MouseListener, MouseMotionListener {
-	Graphics g;
-	Button newGame = new Button("New Game");
-	// Button gameInstruction = new Button ("Instructions");
+public class spiderGame extends Applet implements ActionListener, MouseListener, MouseMotionListener
+{
+    Graphics g;
+    Button newGame = new Button ("New Game");
+    // Button gameInstruction = new Button ("Instructions");
 
-	DeckClass stack;
-	DeckClass fondDeck[] = new DeckClass[8];
-	DeckClass tabDeck[] = new DeckClass[10];
-	DeckClass tempDeck;
+    DeckClass stack;
+    DeckClass fondDeck[] = new DeckClass [8];
+    DeckClass tabDeck[] = new DeckClass [10];
+    DeckClass tempDeck;
 
-	int cardCtr = 0;
+    int cardCtr = 0;
 
-	int tabIndex;
-	int tabCard;
+    int tabIndex;
+    int tabCard;
 
-	boolean drawBoard = false;
+    boolean drawBoard = false;
 
-	boolean OKtoMove = false;
+    boolean OKtoMove = false;
 
-	public void init() {
-		g = getGraphics();
-		setSize(1000, 700);
+    public void init ()
+    {
+	g = getGraphics ();
+	setSize (1000, 700);
 
-		initStack();
-		//initFondation ();
-		initTableau();
+	initStack ();
+	// initFondation ();
+	initTableau ();
 
-		add(newGame);
-		// add (gameInstruction);
+	add (newGame);
+	// add (gameInstruction);
 
-		newGame.addActionListener(this);
+	newGame.addActionListener (this);
 
-		addMouseListener(this);
-		addMouseMotionListener(this);
+	addMouseListener (this);
+	addMouseMotionListener (this);
+    }
+
+
+    public void actionPerformed (ActionEvent e)
+    {
+	Object objSource = e.getSource ();
+
+	if (objSource == newGame)
+	{
+	    drawBoard = true;
+	    repaint ();
 	}
 
-	public void actionPerformed(ActionEvent e) {
-		Object objSource = e.getSource();
+	repaint ();
+    }
 
-		if (objSource == newGame) {
-			drawBoard = true;
-			repaint();
-		}
 
-		repaint();
+    public void paint (Graphics g)
+    {
+	// System.out.println ("called");
+
+	drawTableau ();
+	drawDeck ();
+
+    }
+
+
+    public void initStack ()
+    {
+	stack = new DeckClass (2);
+	stack.shuffle ();
+
+    }
+
+
+    public void drawDeck ()
+    {
+	for (int i = stack.getCardCount () - 1 ; i >= 0 ; i--)
+	{
+	    stack.setFlip (false, i);
+	    stack.draw (g, i, 800, 500);
 	}
+    }
 
-	public void paint(Graphics g) {
-		// System.out.println ("called");
 
-		drawTableau();
-		drawDeck();
-
+    public void initFondation ()
+    {
+	for (int i = 0 ; i < 8 ; i++)
+	{
+	    fondDeck [i] = new DeckClass ();
+	    fondDeck [i].draw (g, i, 50 + i * 75, 600);
 	}
+    }
 
-	public void initStack() {
-		stack = new DeckClass(2);
-		stack.shuffle();
 
+    public void initTableau ()
+    {
+	int n, i;
+	for (n = 0 ; n < 10 ; n++)
+	{
+	    tabDeck [n] = new DeckClass ();
 	}
-
-	public void drawDeck() {
-		for (int i = stack.getCardCount() - 1; i >= 0; i--) {
-			stack.setFlip(false, i);
-			stack.draw(g, i, 800, 500);
-		}
+	for (n = 0 ; n < 4 ; n++)
+	{
+	    for (i = 0 ; i < 6 ; i++)
+	    {
+		initTabPile (n, i);
+	    }
 	}
-
-	public void initFondation() {
-		for (int i = 0; i < 8; i++) {
-			fondDeck[i] = new DeckClass();
-			fondDeck[i].draw(g, i, 50 + i * 75, 600);
-		}
+	for (n = 4 ; n < 10 ; n++)
+	{
+	    for (i = 0 ; i < 5 ; i++)
+	    {
+		initTabPile (n, i);
+	    }
 	}
+	for (n = 0 ; n < 10 ; n++)
+	{
+	    (tabDeck [n].getBot ()).setFlipped (true);
+	}
+    }
 
-	public void initTableau() {
-		int n, i;
-		for (n = 0; n < 10; n++) {
-			tabDeck[n] = new DeckClass();
-		}
-		for (n = 0; n < 4; n++) {
-			for (i = 0; i < 6; i++) {
-				initTabPile(n, i);
+
+    public void drawTableau ()
+    {
+	// flipLast();
+	int n, i;
+	for (n = 0 ; n < 10 ; n++)
+	{
+	    for (i = 0 ; i < tabDeck [n].getCardCount () ; i++)
+	    {
+		tabDeck [n].draw (g, i, 50 + n * 75, 100 + i * 25);
+		// System.out.println((tabDeck[n].getCard(i)).getCenterX() + ", " +
+		// (tabDeck[n].getCard(i)).getCenterY());
+	    }
+	}
+    }
+
+
+    private void initTabPile (int n, int i)
+    {
+	tabDeck [n].addBot (stack.getTop ());
+	stack.removeTop ();
+	tabDeck [n].setFlip (false, i);
+    }
+
+
+    public void flipLast ()
+    {
+	int cardIndexToFlip;
+	for (int x = 0 ; x < 10 ; x++)
+	{
+	    cardIndexToFlip = tabDeck [x].getCardCount () - 1;
+
+	    if (cardIndexToFlip >= 0 && !(tabDeck [x].getCard (cardIndexToFlip)).getFlipped ())
+	    {
+		tabDeck [x].setFlip (true, cardIndexToFlip);
+	    }
+	}
+    }
+
+
+    public void checkFondation ()
+    {
+	boolean completed = false;
+	for (int n = 0 ; n < 10 ; n++)
+	{
+	    CardClass lastCard = tabDeck [n].getBot ();
+	    if (tabDeck [n].getCardCount () >= 13)
+	    {
+		for (int i = tabDeck [n].getCardCount () - 1 ; i > tabDeck [n].getCardCount () - 14 ; i--)
+		{
+		    if (tabDeck [n].getCard (i) != null && tabDeck [n].getCard (i) != null && (tabDeck [n].getCard (i)).getSuitValue () == (tabDeck [n].getCard (i + 1)).getSuitValue () && (tabDeck [n].getCard (i)).getFaceValue () + 1 == (tabDeck [n].getCard (i + 1)).getFaceValue () && (tabDeck [n].getCard (i + 1)).getFlipped ())
+		    {
+			if (i == tabDeck [n].getCardCount () - 14)
+			{
+			    fondDeck [fondCtr].addTop (tabDeck [n].getCard (i));
+			    fondDeck [fondCtr].addTop (tabDeck [n].getCard (i + 1));
+			    completed = true;
 			}
-		}
-		for (n = 4; n < 10; n++) {
-			for (i = 0; i < 5; i++) {
-				initTabPile(n, i);
+			else
+			{
+			    fondDeck [fondCtr].addTop (tabDeck [n].getCard (i));
 			}
-		}
-	}
-
-	public void drawTableau() {
-		flipLast();
-		int n, i;
-		for (n = 0; n < 10; n++) {
-			for (i = 0; i < tabDeck[n].getCardCount(); i++) {
-				tabDeck[n].draw(g, i, 50 + n * 75, 100 + i * 25);
+		    }
+		    else
+		    {
+			for (int x = 0 ; x < fondDeck [fondCtr].getCardCount () ; x++)
+			{
+			    fondDeck [fondCtr].removeTop ();
 			}
+			completed = false;
+			break;
+		    }
 		}
-	}
-
-	private void initTabPile(int n, int i) {
-		tabDeck[n].addBot(stack.getTop());
-		stack.removeTop();
-		tabDeck[n].setFlip(false, i);
-	}
-
-	public void flipLast() {
-		int cardIndexToFlip;
-		for (int x = 0; x < 10; x++) {
-			cardIndexToFlip = tabDeck[x].getCardCount() - 1;
-
-			if (cardIndexToFlip >= 0 && !(tabDeck[x].getCard(cardIndexToFlip)).getFlipped()) {
-				tabDeck[x].setFlip(true, cardIndexToFlip);
-			}
+		if (completed)
+		{
+		    for (int i = tabDeck [n].getCardCount () - 1 ; i > tabDeck [n].getCardCount () - 14 ; i--)
+		    {
+			fondDeck [fondCtr].removeBot ();
+		    }
+		    fondCtr++;
 		}
+	    }
 	}
+    }
 
-	public void findMatchingCard(int x, int y) {
-		int cardIndexToCheck;
-		for (int n = 0; n < 10; n++) {
-			cardIndexToCheck = tabDeck[n].getCardCount() - 1;
 
-			if (cardIndexToCheck > 0
-					&& (tempDeck.getTop()).getFaceValue() + 1 == (tabDeck[n].getCard(cardIndexToCheck)).getFaceValue()
-					&& (tabDeck[n].getCard(cardIndexToCheck)).isPointInside(x, y) == true) {
-				tabDeck[n].addBot(tempDeck.getTop());
-				tempDeck.removeAt(0);
-				return;
-			}
+    public void findMatchingCard (int x, int y)
+    {
+	// System.out.println(tempDeck.getCardCount());
+	for (int n = 0 ; n < 10 ; n++)
+	{
+	    CardClass lastCard = tabDeck [n].getBot ();
+	    if (lastCard != null && lastCard.isPointInside (x, y)
+		    && (tempDeck.getTop ()).getFaceValue () + 1 == lastCard.getFaceValue ())
+	    {
+		for (int i = 0 ; i <= tempDeck.getCardCount () ; i++)
+		{
+		    tabDeck [n].addBot (tempDeck.getTop ());
+		    tempDeck.removeTop ();
 		}
-	}
+		return;
+	    }
 
-	public void checkIfGroup(int tab, int whichCard, int lastCard) {
-		for (int i = whichCard; i < lastCard; i++) {
-			if((tabDeck[tab].getCard(i).getSuitValue() == (tabDeck[tab].getCard(i+1).getSuitValue() && (tabDeck[tab].getCard(i).getFaceValue() + 1 == (tabDeck[tab].getCard(i+1).getFaceValue()) {
-				tempDeck.addTop(tabDeck[tab].getCard(i+1));
-				tempDeck.addTop(tabDeck[tab].getCard(i));
-			} else {
-				for (int n = 0 ; n < tempDeck.getCardCount() ; n++) {
-					tempDeck.removeAt(n);
-				}
-			}
+	}
+	for (int i = 0 ; i <= tempDeck.getCardCount () ; i++)
+	{
+	    tabDeck [tabIndex].addBot (tempDeck.getTop ());
+	    tempDeck.removeTop ();
+	}
+    }
+
+
+    public void checkIfGroup (int tab, int whichCard, int lastCard)
+    {
+	boolean completed = false;
+	for (int i = whichCard ; i < lastCard ; i++)
+	{
+	    if (tabDeck [tab].getCard (i) != null && tabDeck [tab].getCard (i + 1) != null
+		    && (tabDeck [tab].getCard (i)).getSuitValue () == (tabDeck [tab].getCard (i + 1)).getSuitValue ()
+		    && (tabDeck [tab].getCard (i)).getFaceValue () == (tabDeck [tab].getCard (i + 1)).getFaceValue () + 1)
+	    {
+		if (i == lastCard - 1)
+		{
+		    tempDeck.addBot (tabDeck [tab].getCard (i));
+		    tempDeck.addBot (tabDeck [tab].getCard (i + 1));
+		    //System.out.println ("worked");
+		    completed = true;
 		}
-	}
-
-	public void mouseMoved(MouseEvent e) {
-	}
-
-	public void mouseClicked(MouseEvent e) {
-	}
-
-	public void mouseEntered(MouseEvent e) {
-	}
-
-	public void mouseExited(MouseEvent e) {
-	}
-
-	public void mousePressed(MouseEvent e) {
-		int lastCard;
-		for (int n = 0; n < 10; n++) {
-			lastCard = tabDeck[n].getCardCount() - 1;
-			for (int i = 0; i < lastCard; i++) {
-				if ((tabDeck[n].getCard(i)).isPointInside(e.getX(), e.getY())) {
-					checkIfGroup(n, i, lastCard);
-				}
-			}
-			if ((tabDeck[n].getCard(lastCard)).isPointInside(e.getX(), e.getY())) {
-				OKtoMove = true;
-				tabIndex = n;
-				tabCard = lastCard;
-				tempDeck = new DeckClass();
-				tempDeck.addTop(tabDeck[n].getCard(lastCard));
-				tabDeck[n].removeAt(lastCard);
-				tempDeck.draw(g, 0, e.getX(), e.getY());
-				repaint();
-			}
+		else
+		{
+		    tempDeck.addBot (tabDeck [tab].getCard (i));
 		}
-		if ((stack.getCard(0)).isPointInside(e.getX(), e.getY())) {
-			for (int n = 0; n < 10; n++) {
-				tabDeck[n].addBot(stack.getTop());
-				stack.removeTop();
-				repaint();
-			}
+	    }
+	    else
+	    {
+		for (int n = 0 ; n < tempDeck.getCardCount () ; n++)
+		{
+		    tempDeck.removeTop ();
 		}
+		//System.out.println ("worked");
+		completed = false;
+		break;
+	    }
 	}
+	if (completed)
+	{
+	    for (int i = whichCard ; i <= lastCard ; i++)
+	    {
+		tabDeck [tab].removeBot ();
+	    }
+	}
+    }
 
-	public void mouseReleased(MouseEvent e) {
-		if (OKtoMove) {
-			OKtoMove = false;
-			for (int n = 0; n < temDeck.getCardCount(); n++) {
-				tempDeck.draw(g, n, e.getX(), e.getY() + 25 * n);
-			}
-			tempDeck.draw(g, 0, e.getX(), e.getY());
-			findMatchingCard(e.getX(), e.getY());
-			repaint();
-		}
-	}
 
-	public void mouseDragged(MouseEvent e) {
-		if (OKtoMove == true) {
-			for (int n = 0; n < temDeck.getCardCount(); n++) {
-				tempDeck.draw(g, n, e.getX(), e.getY() + 25 * n);
-			}
-			repaint();
-		}
+    public void mouseMoved (MouseEvent e)
+    {
+    }
+
+
+    public void mouseClicked (MouseEvent e)
+    {
+    }
+
+
+    public void mouseEntered (MouseEvent e)
+    {
+    }
+
+
+    public void mouseExited (MouseEvent e)
+    {
+    }
+
+
+    public void mousePressed (MouseEvent e)
+    {
+	for (int n = 0 ; n < 10 ; n++)
+	{
+	    for (int i = 0 ; i < tabDeck [n].getCardCount () ; i++)
+	    {
+		// System.out.println ((tabDeck [n].getCard (i)).getCenterX () + ", " + (tabDeck
+		// [n].getCard (i)).getCenterY ());
+	    }
 	}
+	int lastCard;
+	for (int n = 0 ; n < 10 ; n++)
+	{
+	    lastCard = tabDeck [n].getCardCount () - 1;
+	    if ((tabDeck [n].getCard (lastCard)).isPointInside (e.getX (), e.getY ()) == true)
+	    {
+		// System.out.println (e.getX () + ", " + e.getY () + ", " + (tabDeck
+		// [n].getCard (lastCard)).getCenterX () + ", " + (tabDeck [n].getCard
+		// (lastCard)).getCenterY ());
+		// System.out.println("clicked");
+		OKtoMove = true;
+		tabIndex = n;
+		tabCard = lastCard;
+		tempDeck = new DeckClass ();
+		tempDeck.addTop (tabDeck [n].getCard (lastCard));
+		tabDeck [n].removeAt (lastCard);
+		tempDeck.draw (g, 0, e.getX (), e.getY ());
+		repaint ();
+		return;
+	    }
+	    for (int i = 0 ; i < lastCard ; i++)
+	    {
+		// System.out.println(n + ", " + i + ", " + (tabDeck [n].getCard
+		// (i)).isPointInside (e.getX (), e.getY ()) + ", " + (tabDeck [n].getCard
+		// (i)).getFlipped ());
+		/*
+		 * if (n == 0 && i == 0) { System.out.println ((tabDeck [n].getCard
+		 * (i)).isPointInside (e.getX (), e.getY ()) + ", " + (tabDeck [n].getCard
+		 * (i)).getCenterX () + ", " + (tabDeck [n].getCard (i)).getCenterY () + ", " +
+		 * e.getX () + ", " + e.getY ()); }
+		 */
+		if ((tabDeck [n].getCard (i)).isPointInside (e.getX (), e.getY ()) == true
+			&& (tabDeck [n].getCard (i)).getFlipped () == true)
+		{
+		    // System.out.println("clicked");
+		    OKtoMove = true;
+		    tabIndex = n;
+		    tabCard = i;
+		    tempDeck = new DeckClass ();
+		    checkIfGroup (n, i, lastCard);
+		    repaint ();
+		}
+	    }
+
+	}
+	if ((stack.getCard (0)).isPointInside (e.getX (), e.getY ()))
+	{
+	    for (int n = 0 ; n < 10 ; n++)
+	    {
+		tabDeck [n].addBot (stack.getTop ());
+		stack.removeTop ();
+		repaint ();
+	    }
+	}
+    }
+
+
+    public void mouseReleased (MouseEvent e)
+    {
+	if (OKtoMove)
+	{
+	    OKtoMove = false;
+	    if (!tempDeck.isEmpty ())
+	    {
+		for (int n = 0 ; n < tempDeck.getCardCount () ; n++)
+		{
+		    tempDeck.draw (g, n, e.getX (), e.getY () + 25 * n);
+		}
+		// tempDeck.draw (g, 0, e.getX (), e.getY ());
+		findMatchingCard (e.getX (), e.getY ());
+	    }
+	    flipLast ();
+	    repaint ();
+	}
+    }
+
+
+    public void mouseDragged (MouseEvent e)
+    {
+	if (OKtoMove == true)
+	{
+	    for (int n = 0 ; n < tempDeck.getCardCount () ; n++)
+	    {
+		tempDeck.draw (g, n, e.getX (), e.getY () + 25 * n);
+	    }
+	    repaint ();
+	}
+    }
 }
