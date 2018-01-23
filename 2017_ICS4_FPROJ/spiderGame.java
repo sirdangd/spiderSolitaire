@@ -1,23 +1,37 @@
+//programer : Daniel Dikaleh
+
+//Game Name : Spider Solitare
+
 import java.awt.*;
 import java.util.*;
 import java.applet.*;
 import java.awt.event.*;
+import java.net.*;
 
 public class spiderGame extends Applet implements ActionListener, MouseListener, MouseMotionListener
 {
     Graphics g;
-    Button newGame = new Button ("New Game");
+    //Button newGame = new Button ("New Game");
     // Button gameInstruction = new Button ("Instructions");
+    TextField score = new TextField (10);
+    long startTime = System.currentTimeMillis ();
+    TextField timer = new TextField (10);
 
-    DeckClass stack;
-    DeckClass fondDeck[] = new DeckClass [8];
-    DeckClass tabDeck[] = new DeckClass [10];
-    DeckClass tempDeck;
+    DeckClass stack; //deck class used for the main stack
+    DeckClass fondDeck[] = new DeckClass [8]; //deck class used for foundation deck
+    DeckClass tabDeck[] = new DeckClass [10]; //deck class used for the tableau
+    DeckClass tempDeck; //deck class used for temporary deck
+    
+    public static URL CODE_BASE;
 
     int cardCtr = 0;
+    int fondCtr = 0; //counter used to know which foundation I am currently on
 
-    int tabIndex;
-    int tabCard;
+    int fondSeqScore = 0;
+    int faceUpScore = 0;
+
+    int tabIndex; //global counter to know which tab colounm I am currently on | used for tempDeck
+    int tabCard; //global counter to know which card index I am currently on | used for tempDeck
 
     boolean drawBoard = false;
 
@@ -25,20 +39,27 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     public void init ()
     {
+	CODE_BASE = getCodeBase();    
+    
 	g = getGraphics ();
 	setSize (1000, 700);
+	setBackground(Color.green);
 
-	initStack ();
-	// initFondation ();
-	initTableau ();
+	initStack (); //initializes stack
+	initFondation (); //initializes foundation
+	initTableau (); //initializes tableau
 
-	add (newGame);
+	//add (newGame);
 	// add (gameInstruction);
+	add (score);
+	add (timer);
 
-	newGame.addActionListener (this);
+	//newGame.addActionListener (this);
 
 	addMouseListener (this);
 	addMouseMotionListener (this);
+
+
     }
 
 
@@ -46,11 +67,11 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     {
 	Object objSource = e.getSource ();
 
-	if (objSource == newGame)
+	/*if (objSource == newGame)
 	{
 	    drawBoard = true;
 	    repaint ();
-	}
+	}*/
 
 	repaint ();
     }
@@ -58,10 +79,16 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     public void paint (Graphics g)
     {
-	// System.out.println ("called");
+	//constatly updates the board
+
+	int elapsedSeconds = (int) (System.currentTimeMillis () - startTime) / 1000;
+	timer.setText ("Time: " + String.valueOf (elapsedSeconds));
 
 	drawTableau ();
 	drawDeck ();
+	checkFondation ();
+	drawFond ();
+
 
     }
 
@@ -70,11 +97,12 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     {
 	stack = new DeckClass (2);
 	stack.shuffle ();
+	//initializes 2 decks (104 cards) and shuffles the deck
 
     }
 
 
-    public void drawDeck ()
+    public void drawDeck ()  //draws the stack in the bottom right corner
     {
 	for (int i = stack.getCardCount () - 1 ; i >= 0 ; i--)
 	{
@@ -89,12 +117,27 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	for (int i = 0 ; i < 8 ; i++)
 	{
 	    fondDeck [i] = new DeckClass ();
-	    fondDeck [i].draw (g, i, 50 + i * 75, 600);
+	    //fondDeck [i].draw (g, i, 50 + i * 75, 600);
 	}
     }
 
 
-    public void initTableau ()
+    public void drawFond ()
+    {
+	for (int i = 0 ; i < 8 ; i++)
+	{
+	    if (!fondDeck [i].isEmpty ())
+	    {
+		for (int n = 0 ; n < 13 ; n++)
+		{
+		    fondDeck [i].draw (g, n, 50 + i * 75, 500);
+		}
+	    }
+	}
+    }
+
+
+    public void initTableau ()  //makes a new DeckClass() in each index of the array and initializes cards inside it
     {
 	int n, i;
 	for (n = 0 ; n < 10 ; n++)
@@ -122,23 +165,21 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     }
 
 
-    public void drawTableau ()
+    public void drawTableau ()  //used to draw the tableau
     {
-	// flipLast();
+
 	int n, i;
 	for (n = 0 ; n < 10 ; n++)
 	{
 	    for (i = 0 ; i < tabDeck [n].getCardCount () ; i++)
 	    {
-		tabDeck [n].draw (g, i, 50 + n * 75, 100 + i * 25);
-		// System.out.println((tabDeck[n].getCard(i)).getCenterX() + ", " +
-		// (tabDeck[n].getCard(i)).getCenterY());
+		tabDeck [n].draw (g, i, 50 + n * 85, 100 + i * 25);
 	    }
 	}
     }
 
 
-    private void initTabPile (int n, int i)
+    private void initTabPile (int n, int i)  //adds cards in tableau
     {
 	tabDeck [n].addBot (stack.getTop ());
 	stack.removeTop ();
@@ -146,7 +187,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     }
 
 
-    public void flipLast ()
+    public void flipLast ()  //everytime mouse is released, it goes through all the tableaus and flips the last
     {
 	int cardIndexToFlip;
 	for (int x = 0 ; x < 10 ; x++)
@@ -156,12 +197,13 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	    if (cardIndexToFlip >= 0 && !(tabDeck [x].getCard (cardIndexToFlip)).getFlipped ())
 	    {
 		tabDeck [x].setFlip (true, cardIndexToFlip);
+		faceUpScore = faceUpScore + 150;
 	    }
 	}
     }
 
 
-    public void checkFondation ()
+    public void checkFondation ()  //checks tabealus constantly to see if foundation was created
     {
 	boolean completed = false;
 	for (int n = 0 ; n < 10 ; n++)
@@ -200,6 +242,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		    {
 			fondDeck [fondCtr].removeBot ();
 		    }
+		    fondSeqScore = fondSeqScore + 1040;
 		    fondCtr++;
 		}
 	    }
@@ -207,16 +250,17 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     }
 
 
-    public void findMatchingCard (int x, int y)
+    public void findMatchingCard (int x, int y)  //used to see if card that I dragged is on another card or not, if so, it checks if it can match or not, if not it goes back to its original place
     {
-	// System.out.println(tempDeck.getCardCount());
+	int len;
 	for (int n = 0 ; n < 10 ; n++)
 	{
 	    CardClass lastCard = tabDeck [n].getBot ();
 	    if (lastCard != null && lastCard.isPointInside (x, y)
 		    && (tempDeck.getTop ()).getFaceValue () + 1 == lastCard.getFaceValue ())
 	    {
-		for (int i = 0 ; i <= tempDeck.getCardCount () ; i++)
+		len = tempDeck.getCardCount ();
+		for (int i = 0 ; i < len ; i++)
 		{
 		    tabDeck [n].addBot (tempDeck.getTop ());
 		    tempDeck.removeTop ();
@@ -225,7 +269,8 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	    }
 
 	}
-	for (int i = 0 ; i <= tempDeck.getCardCount () ; i++)
+	len = tempDeck.getCardCount ();
+	for (int i = 0 ; i < tempDeck.getCardCount () ; i++)
 	{
 	    tabDeck [tabIndex].addBot (tempDeck.getTop ());
 	    tempDeck.removeTop ();
@@ -233,7 +278,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
     }
 
 
-    public void checkIfGroup (int tab, int whichCard, int lastCard)
+    public void checkIfGroup (int tab, int whichCard, int lastCard)  //if i press a card that is not the last card on a tableau it checks if what i clicked can be turned into a group or not
     {
 	boolean completed = false;
 	for (int i = whichCard ; i < lastCard ; i++)
@@ -246,7 +291,6 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		{
 		    tempDeck.addBot (tabDeck [tab].getCard (i));
 		    tempDeck.addBot (tabDeck [tab].getCard (i + 1));
-		    //System.out.println ("worked");
 		    completed = true;
 		}
 		else
@@ -260,7 +304,6 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		{
 		    tempDeck.removeTop ();
 		}
-		//System.out.println ("worked");
 		completed = false;
 		break;
 	    }
@@ -297,24 +340,12 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 
     public void mousePressed (MouseEvent e)
     {
-	for (int n = 0 ; n < 10 ; n++)
-	{
-	    for (int i = 0 ; i < tabDeck [n].getCardCount () ; i++)
-	    {
-		// System.out.println ((tabDeck [n].getCard (i)).getCenterX () + ", " + (tabDeck
-		// [n].getCard (i)).getCenterY ());
-	    }
-	}
 	int lastCard;
 	for (int n = 0 ; n < 10 ; n++)
 	{
 	    lastCard = tabDeck [n].getCardCount () - 1;
 	    if ((tabDeck [n].getCard (lastCard)).isPointInside (e.getX (), e.getY ()) == true)
 	    {
-		// System.out.println (e.getX () + ", " + e.getY () + ", " + (tabDeck
-		// [n].getCard (lastCard)).getCenterX () + ", " + (tabDeck [n].getCard
-		// (lastCard)).getCenterY ());
-		// System.out.println("clicked");
 		OKtoMove = true;
 		tabIndex = n;
 		tabCard = lastCard;
@@ -327,19 +358,9 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 	    }
 	    for (int i = 0 ; i < lastCard ; i++)
 	    {
-		// System.out.println(n + ", " + i + ", " + (tabDeck [n].getCard
-		// (i)).isPointInside (e.getX (), e.getY ()) + ", " + (tabDeck [n].getCard
-		// (i)).getFlipped ());
-		/*
-		 * if (n == 0 && i == 0) { System.out.println ((tabDeck [n].getCard
-		 * (i)).isPointInside (e.getX (), e.getY ()) + ", " + (tabDeck [n].getCard
-		 * (i)).getCenterX () + ", " + (tabDeck [n].getCard (i)).getCenterY () + ", " +
-		 * e.getX () + ", " + e.getY ()); }
-		 */
-		if ((tabDeck [n].getCard (i)).isPointInside (e.getX (), e.getY ()) == true
+		if (tabDeck [n].getCard (i) != null && (tabDeck [n].getCard (i)).isPointInside (e.getX (), e.getY ()) == true
 			&& (tabDeck [n].getCard (i)).getFlipped () == true)
 		{
-		    // System.out.println("clicked");
 		    OKtoMove = true;
 		    tabIndex = n;
 		    tabCard = i;
@@ -358,6 +379,7 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		stack.removeTop ();
 		repaint ();
 	    }
+	    flipLast ();
 	}
     }
 
@@ -373,10 +395,10 @@ public class spiderGame extends Applet implements ActionListener, MouseListener,
 		{
 		    tempDeck.draw (g, n, e.getX (), e.getY () + 25 * n);
 		}
-		// tempDeck.draw (g, 0, e.getX (), e.getY ());
 		findMatchingCard (e.getX (), e.getY ());
 	    }
 	    flipLast ();
+	    score.setText ("Score: " + (fondSeqScore + faceUpScore));
 	    repaint ();
 	}
     }

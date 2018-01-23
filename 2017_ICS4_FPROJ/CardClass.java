@@ -1,4 +1,14 @@
+//programmer : Daniel Dikaleh
+
+//purpose of class : creates cards and can get the characteristics of the card such as its face value, suit value, and whether it is flipped or not
+
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
 
 class CardClass extends SuitClass
 {
@@ -10,6 +20,8 @@ class CardClass extends SuitClass
     protected int cardHeight;
     protected boolean isShowing;
     protected boolean isFaceUp;
+    protected BufferedImage faceUpBi;
+    protected BufferedImage faceDownBi;
 
     public void setFaceValue (int newVal)
     {
@@ -44,7 +56,7 @@ class CardClass extends SuitClass
 	}
 	else if (cardSize == 2)
 	{
-	    cardHeight = 80;
+	    cardHeight = 97;
 	}
 	else if (cardSize == 3)
 	{
@@ -101,6 +113,57 @@ class CardClass extends SuitClass
     }
 
 
+    private String getImageName (int sv, int fv)
+    {
+	String newSv = "";
+	String newFv = "";
+
+	if (sv == 1)
+	{
+	    newSv = "d";
+	}
+	else if (sv == 2)
+	{
+	    newSv = "c";
+	}
+	else if (sv == 3)
+	{
+	    newSv = "h";
+	}
+	else if (sv == 4)
+	{
+	    newSv = "s";
+	}
+
+	if (fv == 1)
+	{
+	    newFv = "a";
+	}
+	else if (fv == 10)
+	{
+	    newFv = "t";
+	}
+	else if (fv == 11)
+	{
+	    newFv = "j";
+	}
+	else if (fv == 12)
+	{
+	    newFv = "q";
+	}
+	else if (fv == 13)
+	{
+	    newFv = "k";
+	}
+	else
+	{
+	    newFv = "" + fv;
+	}
+
+	return newFv + newSv + ".gif";
+    }
+
+
     /*
      * public int getMidValueX () { int answerX = (int) ((iCentreX + midValX) / 2);
      * return answerX; }
@@ -112,6 +175,7 @@ class CardClass extends SuitClass
 
     public void draw (Graphics g)
     {
+
 	int x2;
 	int y2;
 	int midValX;
@@ -125,114 +189,17 @@ class CardClass extends SuitClass
 	midValY = (iCentreY + y2) / 2;
 	if (isFaceUp)
 	{
-	    // Color oldColour = getColour ();
-	    setColour (Color.white);
-	    g.setColor (iColour);
-	    g.fillRect (iCentreX, iCentreY, (int) (cardHeight * 0.7), cardHeight);
-	    setColour (Color.black);
-	    g.setColor (iColour);
-	    g.drawRect (iCentreX, iCentreY, (int) (cardHeight * 0.7), cardHeight);
-	    // setColour (oldColour);
-	    if (suitValue == 1)
-	    {
-		DiamondClass d = new DiamondClass ();
-		if (iColour != Color.white)
-		{
-		    setColour (Color.red);
-		}
-		d.setCenter (midValX, midValY);
-		d.setHeight ((int) (cardHeight * 0.25));
-		// d.setWidth ((int) ((cardHeight * 0.25) * (4 / 5)));
-		d.draw (g);
-	    }
-	    else if (suitValue == 2)
-	    {
-		ClubClass cl = new ClubClass ();
-		if (iColour != Color.white)
-		{
-		    setColour (Color.black);
-		}
-		cl.setCenter (midValX, midValY);
-		cl.setHeight ((int) (cardHeight * 0.25));
-		// cl.setWidth ((int) ((cardHeight * 0.25) * (4 / 5)));
-		cl.draw (g);
-	    }
-	    else if (suitValue == 3)
-	    {
-		HeartClass h = new HeartClass ();
-		if (iColour != Color.white)
-		{
-		    setColour (Color.red);
-		}
-		h.setCenter (midValX, midValY);
-		h.setHeight ((int) (cardHeight * 0.25));
-		// h.setWidth ((int) ((cardHeight * 0.25) * (4 / 5)));
-		h.draw (g);
-	    }
-	    else if (suitValue == 4)
-	    {
-		SpadeClass s = new SpadeClass ();
-		if (iColour != Color.white)
-		{
-		    setColour (Color.black);
-		}
-		s.setCenter (midValX, midValY);
-		s.setHeight ((int) (cardHeight * 0.25));
-		// s.setWidth ((int) ((cardHeight * 0.25) * (4 / 5)));
-		s.draw (g);
-	    }
-
-	    if (faceValue == 1)
-	    {
-		g.setColor (iColour);
-		g.setFont (f);
-		g.setColor (iColour);
-		g.drawString ("A", iCentreX + 10, iCentreY + fontSize);
-	    }
-
-	    else if (faceValue == 11)
-	    {
-		g.setColor (iColour);
-		g.setFont (f);
-		g.drawString ("J", iCentreX + 10, iCentreY + fontSize);
-	    }
-	    else if (faceValue == 12)
-	    {
-		g.setColor (iColour);
-		g.setFont (f);
-		g.drawString ("Q", iCentreX + 10, iCentreY + fontSize);
-	    }
-	    else if (faceValue == 13)
-	    {
-		g.setColor (iColour);
-		g.setFont (f);
-		g.drawString ("K", iCentreX + 10, iCentreY + fontSize);
-	    }
-	    else
-	    {
-		g.setColor (iColour);
-		g.setFont (f);
-		String cardValStr = "" + faceValue;
-		g.drawString (cardValStr, iCentreX + 10, iCentreY + fontSize);
-	    }
-
+	    g.drawImage (faceUpBi, iCentreX, iCentreY, null);
 	}
 	else
 	{
-	    g.setColor (iColour);
-	    g.fillRect (iCentreX, iCentreY, (int) (cardHeight * 0.7), cardHeight);
-	    Color oldColour = getColour ();
-	    setColour (Color.black);
-	    g.setColor (iColour);
-	    g.drawRect (iCentreX, iCentreY, (int) (cardHeight * 0.7), cardHeight);
-	    setColour (oldColour);
+	    g.drawImage (faceDownBi, iCentreX, iCentreY, null);
 	}
     }
 
 
     public boolean isPointInside (int x, int y)
     {
-	//System.out.println(super.getCenterX() + ", " + (super.getCenterX() + super.getWidth()) + ", " + super.getCenterY() + ", " + (super.getCenterY() + super.getHeight()) + ", " + x + ", " + y);
 	if (x >= getCenterX () && x <= getCenterX () + getWidth () && y >= getCenterY ()
 		&& y <= getCenterY () + getHeight ())
 	{
@@ -267,6 +234,15 @@ class CardClass extends SuitClass
 
     public CardClass (int newFV, int newSV, boolean flipped)
     {
+	try
+	{
+	    faceUpBi = ImageIO.read (new File (spiderGame.CODE_BASE.getPath () + "cards/" + getImageName (newSV, newFV)));
+	    faceDownBi = ImageIO.read (new File (spiderGame.CODE_BASE.getPath () + "cards/b.gif"));
+	}
+	catch (IOException e)
+	{
+	    e.printStackTrace ();
+	}
 	setFaceValue (newFV);
 	setColour (Color.green);
 	setSuitValue (newSV);

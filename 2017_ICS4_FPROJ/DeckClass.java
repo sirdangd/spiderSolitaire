@@ -1,3 +1,7 @@
+//programmer : Daniel Dikaleh
+
+//purpose of class : creates a Vector called deck, used to add cards inside vector
+
 import java.awt.*;
 import java.util.*;
 
